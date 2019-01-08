@@ -1,0 +1,42 @@
+#include "ros/ros.h"
+#include "gazebo_msgs/SpawnModel.h"
+#include "gazebo_msgs/ModelState.h"
+#include <fstream>
+#include "string.h"
+#include "robot.h"
+#include <random>
+ 
+using namespace std;
+ 
+int main(int argc, char** argv) {
+    ROS_INFO("-1");
+    ros::init(argc, argv, "gaztest");
+    ROS_INFO("0");
+    GazeboService::getInstance();
+
+    ROS_INFO("1");
+
+    ros::service::waitForService("gazebo/spawn_sdf_model"); 
+
+    ROS_INFO("2");
+
+    Robot* robot = new Robot(0, 0, "/home/user/Projects/ros/catkin_ws/src/kurs/models/pioneer2dx/model.sdf", "pioneer2dx"); 
+    Robot* enemyRobot = new Robot(2, 2, "/home/user/Projects/ros/catkin_ws/src/kurs/models/pioneer2dx/model.sdf", "second");
+    ROS_INFO("3");
+    robot->moveTo(2.0, 2.0);
+    ROS_INFO("4");
+
+    random_device rd;
+    uniform_real_distribution<double> interval(-10.0, 10.0);
+
+    while(ros::ok()){
+        robot->moveTo(interval(rd), interval(rd));
+        enemyRobot->moveTo(interval(rd), interval(rd));
+    }
+    ros::spinOnce();
+    
+    ROS_INFO_STREAM("9. After spinOnce, about to return");
+
+    delete robot;
+    return 0;
+}
