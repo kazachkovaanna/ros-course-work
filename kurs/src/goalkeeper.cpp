@@ -54,9 +54,9 @@ int main(int argc, char** argv) {
     std::cout<<"name "<<name<<" team "<<team<<" x "<<x<<" y "<<y<<std::endl;
     Robot* player;
     if(team==1)
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/kurs/models/player1/model.sdf", name); 
+    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player1/model.sdf", name); 
     else 
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/kurs/models/player2/model.sdf", name); 
+    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player2/model.sdf", name); 
   
     random_device rd;
     uniform_real_distribution<double> interval(-2.0, 2.0);

@@ -132,7 +132,7 @@ public:
         uniform_real_distribution<double> interval(0, 3);
         uniform_real_distribution<double> intervalx(-10.0, 10.0);
         uniform_real_distribution<double> intervaly(-9.0, 9.0);
-        if(interval(rd)>1.5){
+        if(interval(rd)>1.0){
             tf::StampedTransform balltf= getTransofrms("ball");
             double bx = balltf.getOrigin().getX();
             double by = balltf.getOrigin().getY();

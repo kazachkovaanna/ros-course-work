@@ -2,6 +2,7 @@
 #include "gazebo_msgs/SpawnModel.h"
 #include "gazebo_msgs/DeleteModel.h"
 #include "gazebo_msgs/ModelState.h"
+#include "gazebo_msgs/GetModelState.h"
 #include <fstream>
 
 class GazeboService {
@@ -36,6 +37,10 @@ public:
 
     ros::Publisher getBallPosePublisher(){
         return nodeHandle.advertise<geometry_msgs::Pose>("ball_position", 100);
+    }
+
+    ros::ServiceClient getBallPoseClient(){
+        return nodeHandle.serviceClient<gazebo_msgs::GetModelState>("gazebo/get_model_state");
     }
 
     ros::Subscriber getBallPoseSubscriver(void(*callback)(const geometry_msgs::Pose& msg)){

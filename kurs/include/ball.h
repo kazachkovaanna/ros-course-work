@@ -18,6 +18,7 @@ class Ball{
 protected:
     ros::Publisher gazeboModelStatePublisher;
     ros::Subscriber ballStateSubscriber;
+    ros::ServiceClient ballPoseClient;
     
     string pathToModel;
     string modelDescription;
@@ -53,7 +54,7 @@ public:
         
 
         this->modelName = "ball";
-        this->pathToModel = "/home/user/Projects/ros/catkin_ws/src/kurs/models/ball/model.sdf";
+        this->pathToModel = "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/ball/model.sdf";
         pose.position.x=0.0;
         pose.position.y=0.0;
         tf::TransformListener tfListener;
@@ -69,6 +70,7 @@ public:
         // robotsOrientation = FORWARD;
         rate = new ros::Rate(fps);
         halfRate = new ros::Rate(fps/2);
+        ballPoseClient = GazeboService::getInstance().getBallPoseClient();
         gazeboModelStatePublisher = GazeboService::getInstance().getModelStatePublisher();
         ifstream fin(this->pathToModel);
         string lineBuffer;
@@ -99,6 +101,34 @@ public:
         
         if(msg.model_name == "ball"){
             geometry_msgs::Pose ballPose(msg.pose);
+            cout<<ballPose.position.x<<","<<ballPose.position.y<<endl;
+            transform.setOrigin(tf::Vector3(ballPose.position.x, ballPose.position.y, 0.0));
+            transform.setRotation(tf::Quaternion(0, 0, 0, 1));
+            tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/ball"));
+        }
+    }
+
+    void beABall(){
+        static ros::Publisher ballPositionPublisher = GazeboService::getInstance().getBallPosePublisher();
+        static tf::TransformListener tfListener;
+        static tf::TransformBroadcaster tfBroadcaster;
+        static tf::StampedTransform ballStampedTransform;
+        static tf::Transform transform;
+        gazebo_msgs::GetModelState modelState;
+        modelState.request.model_name = this->modelName;
+        if(ballPoseClient.call(modelState)){
+            geometry_msgs::Pose ballPose(modelState.response.pose);
+            if(ballPose.position.x > 10 || ballPose.position.x < -10 ||
+                ballPose.position.y > 10 || ballPose.position.y < -10
+            ){
+                gazebo_msgs::ModelState modelState;
+                modelState.model_name = this->modelName;
+                ballPose.position.x = 0;
+                ballPose.position.y = 0;
+                modelState.pose = ballPose;
+                gazeboModelStatePublisher.publish(modelState);
+                // spawnModel();
+            }
             cout<<ballPose.position.x<<","<<ballPose.position.y<<endl;
             transform.setOrigin(tf::Vector3(ballPose.position.x, ballPose.position.y, 0.0));
             transform.setRotation(tf::Quaternion(0, 0, 0, 1));

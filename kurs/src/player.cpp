@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     GazeboService::getInstance();
     ros::service::waitForService("gazebo/spawn_sdf_model"); 
 
-    // ros::Publisher publisher_found_topic = n.advertise<std_msgs::String>("found_topic", 10);
+    // initializing with parameters
     ros::Rate rate(0.5);
     string name;
     int team;
@@ -24,11 +24,14 @@ int main(int argc, char** argv) {
 	ros::param::get("~x", x);
     ros::param::get("~y", y);
 
+    //creating transform to send this player's pose
+
     tf::TransformListener tf_listener;
     tf::TransformBroadcaster tf_broadcaster;
     tf::StampedTransform rescuer_transform;
     tf::Transform transform;
 
+    //make sure that all nodes now have my transform
     transform.setOrigin(tf::Vector3(x, y, 0.0));
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     for(int i = 0; i < 10; i++){
@@ -37,6 +40,7 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
+    //make sure that player now gets a position of a ball
     while(true){
         try
             {
@@ -52,11 +56,12 @@ int main(int argc, char** argv) {
     }
 
 
+    //spawn model to gazebo
     Robot* player;
     if(team==1)
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/kurs/models/player1/model.sdf", name); 
+    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player1/model.sdf", name); 
     else 
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/kurs/models/player2/model.sdf", name); 
+    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player2/model.sdf", name); 
   
     random_device rd;
     uniform_real_distribution<double> interval(-10.0, 10.0);

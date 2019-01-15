@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     string name;
     int team;
     double x,y;
-    ros::Rate rate(0.5);
+    ros::Rate rate(1);
 
 
     tf::TransformListener tf_listener;
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
 
-    for(int i = 0; i<11; i++){
+    for(int i = 0; i<22; i++){
         tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
         rate.sleep();
     }
@@ -58,15 +58,17 @@ int main(int argc, char** argv) {
     while(ros::ok()){
         //be a ball
 
-        for(int i = 0; i<10; i++){
-            // if(i==0)tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
-            double nx = interval(rd);
-            double ny = interval(rd);
-            ball->moveTo(nx, ny);
-            transform.setOrigin(tf::Vector3(nx, ny, 0.0));
-            tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
-            rate.sleep();
-        }
+        // for(int i = 0; i<10; i++){
+        //     // if(i==0)tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
+        //     double nx = interval(rd);
+        //     double ny = interval(rd);
+        //     ball->moveTo(nx, ny);
+        //     transform.setOrigin(tf::Vector3(nx, ny, 0.0));
+        //     tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
+        //     rate.sleep();
+        // }
+        ball->beABall();
+        rate.sleep();
     }
     ros::spinOnce();
     return 0;
