@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     string name;
     int team;
     double x,y;
-    ros::Rate rate(1);
+    ros::Rate rate(20);
 
 
     tf::TransformListener tf_listener;
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
 
-    for(int i = 0; i<22; i++){
+    for(int i = 0; i<110; i++){
         tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
         rate.sleep();
     }

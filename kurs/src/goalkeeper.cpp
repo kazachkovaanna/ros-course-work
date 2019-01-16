@@ -14,12 +14,14 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "keeper");
     GazeboService::getInstance();
     ros::service::waitForService("gazebo/spawn_sdf_model"); 
-    string name;
-    int team;
-    double x,y;
     ros::Rate rate(0.5);
-    ros::param::get("~name", name);
+
+    string name;
+    int team, number, total;
+    double x,y;
     ros::param::get("~team",team);
+    ros::param::get("~number",number);
+    ros::param::get("~name", name);
 	ros::param::get("~x", x);
     ros::param::get("~y", y);
 
@@ -53,16 +55,13 @@ int main(int argc, char** argv) {
     
     std::cout<<"name "<<name<<" team "<<team<<" x "<<x<<" y "<<y<<std::endl;
     Robot* player;
-    if(team==1)
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player1/model.sdf", name); 
-    else 
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player2/model.sdf", name); 
+    player = new Robot(x, y, team, number, total, "goalkeeper"); 
   
     random_device rd;
     uniform_real_distribution<double> interval(-2.0, 2.0);
 
     while(ros::ok()){
-        tf::StampedTransform ballToRobotTransform = player->getTransofrms("ball");
+        tf::StampedTransform ballToRobotTransform = player->getTransofrms("ball").getBall();
         // player->moveTo(ballToRobotTransform.getOrigin().getX(), ballToRobotTransform.getOrigin().getY());
         if(team==1)
         player->moveTo(ballToRobotTransform.getOrigin().getX(), 10.0);

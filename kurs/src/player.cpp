@@ -17,12 +17,15 @@ int main(int argc, char** argv) {
     // initializing with parameters
     ros::Rate rate(0.5);
     string name;
-    int team;
+    int team, number, total;
     double x,y;
-    ros::param::get("~name", name);
     ros::param::get("~team",team);
+    ros::param::get("~number",number);
+    ros::param::get("~total",total);
 	ros::param::get("~x", x);
     ros::param::get("~y", y);
+
+    name = "player"+team+number;
 
     //creating transform to send this player's pose
 
@@ -36,7 +39,7 @@ int main(int argc, char** argv) {
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     for(int i = 0; i < 10; i++){
     
-        tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", name));
+        tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time(0), "world", name));
         rate.sleep();
     }
 
@@ -58,11 +61,7 @@ int main(int argc, char** argv) {
 
     //spawn model to gazebo
     Robot* player;
-    if(team==1)
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player1/model.sdf", name); 
-    else 
-    player = new Robot(x, y, "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player2/model.sdf", name); 
-  
+    player = new Robot(x, y, team, number,total, "player"); 
     random_device rd;
     uniform_real_distribution<double> interval(-10.0, 10.0);
     rate.sleep();

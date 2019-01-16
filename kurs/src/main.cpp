@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
 
     ROS_INFO("2");
 
-    Robot* robot = new Robot(0, 0, "/home/user/Projects/ros/catkin_ws/src/kurs/models/pioneer2dx/model.sdf", "pioneer2dx"); 
-    Robot* enemyRobot = new Robot(2, 2, "/home/user/Projects/ros/catkin_ws/src/kurs/models/pioneer2dx/model.sdf", "second");
+    Robot* robot = new Robot(0, 0, 1, 1, 2, "player"); 
+    Robot* enemyRobot = new Robot(2, 2, 2, 1, 2, "player");
     ROS_INFO("3");
     robot->moveTo(2.0, 2.0);
     ROS_INFO("4");

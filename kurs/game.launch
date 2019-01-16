@@ -3,50 +3,60 @@
     <node name="ball" pkg = "kurs" type="ball"/>
 
     <node name="player11" pkg="kurs" type="player" >
-        <param name="name" type="string" value="player11" />
+        <param name="number" type="int" value="1" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="1" />
         <param name="x" type="double" value="-5.0" />
         <param name="y" type="double" value="5.0" />
     </node>
     <node name="player12" pkg="kurs" type="player" >
-        <param name="name" type="string" value="player12" />
+        <param name="number" type="int" value="2" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="1" />
         <param name="x" type="double" value="0.0" />
         <param name="y" type="double" value="5.0" />
     </node>
     <node name="player13" pkg="kurs" type="player" >
-        <param name="name" type="string" value="player13" />
+        <param name="number" type="int" value="3" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="1" />
         <param name="x" type="double" value="5.0" />
         <param name="y" type="double" value="5.0" />
     </node>
     <node name="goalkeeper1" pkg="kurs" type="goalkeeper" >
         <param name="name" type="string" value="goalkeeper1" />
+        <param name="number" type="int" value="1" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="1" />
         <param name="x" type="double" value="0.0" />
         <param name="y" type="double" value="10.0" />
     </node>
 
     <node name="player21" pkg="kurs" type="player" >
-        <param name="name" type="string" value="player21" />
+        <param name="number" type="int" value="1" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="2" />
         <param name="x" type="double" value="-5.0" />
         <param name="y" type="double" value="-5.0" />
     </node>
     <node name="player22" pkg="kurs" type="player" >
-    <param name="name" type="string" value="player22" />
+        <param name="number" type="int" value="2" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="2" />
         <param name="x" type="double" value="0.0" />
         <param name="y" type="double" value="-5.0" />
     </node>
     <node name="player23" pkg="kurs" type="player" >
-        <param name="name" type="string" value="player23" />
+        <param name="number" type="int" value="3" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="2" />
         <param name="x" type="double" value="5.0" />
         <param name="y" type="double" value="-5.0" />
     </node>
     <node name="goalkeeper2" pkg="kurs" type="goalkeeper" >
         <param name="name" type="string" value="goalkeeper2" />
+        <param name="number" type="int" value="1" />
+        <param name="total" type="int" value="6" />
         <param name="team" type="int" value="2" />
         <param name="x" type="double" value="0.0" />
         <param name="y" type="double" value="-10.0" />
