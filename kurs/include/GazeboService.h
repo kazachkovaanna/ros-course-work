@@ -39,7 +39,7 @@ public:
         return nodeHandle.advertise<geometry_msgs::Pose>("ball_position", 100);
     }
 
-    ros::ServiceClient getBallPoseClient(){
+    ros::ServiceClient getGazeboModelPoseClient(){
         return nodeHandle.serviceClient<gazebo_msgs::GetModelState>("gazebo/get_model_state");
     }
 

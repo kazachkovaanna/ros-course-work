@@ -55,8 +55,8 @@ public:
 
         this->modelName = "ball";
         this->pathToModel = "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/ball/model.sdf";
-        pose.position.x=0.0;
-        pose.position.y=0.0;
+        pose.position.x=1.0;
+        pose.position.y=-2.0;
         tf::TransformListener tfListener;
         tf::TransformBroadcaster tfBroadcaster;
         tf::StampedTransform ballStampedTransform;
@@ -70,7 +70,7 @@ public:
         // robotsOrientation = FORWARD;
         rate = new ros::Rate(fps);
         halfRate = new ros::Rate(fps/2);
-        ballPoseClient = GazeboService::getInstance().getBallPoseClient();
+        ballPoseClient = GazeboService::getInstance().getGazeboModelPoseClient();
         gazeboModelStatePublisher = GazeboService::getInstance().getModelStatePublisher();
         ifstream fin(this->pathToModel);
         string lineBuffer;
@@ -132,7 +132,9 @@ public:
             cout<<ballPose.position.x<<","<<ballPose.position.y<<endl;
             transform.setOrigin(tf::Vector3(ballPose.position.x, ballPose.position.y, 0.0));
             transform.setRotation(tf::Quaternion(0, 0, 0, 1));
-            tfBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/world", "/ball"));
+            ros::Time now = ros::Time::now();
+            tfBroadcaster.sendTransform(tf::StampedTransform(transform, now, "/world", "/ball"));
+            cout<<"Sent time "<<now<<endl;
         }
     }
 

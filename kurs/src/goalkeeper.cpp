@@ -33,6 +33,7 @@ int main(int argc, char** argv) {
     transform.setOrigin(tf::Vector3(x, y, 0.0));
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     for(int i = 0; i < 10; i++){
+        cout<<ros::Time::now()<<endl;
         tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", name));
         rate.sleep();
     }

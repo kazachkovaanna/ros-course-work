@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     for(int i = 0; i < 10; i++){
     
-        tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time(0), "world", name));
+        tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", name));
         rate.sleep();
     }
 

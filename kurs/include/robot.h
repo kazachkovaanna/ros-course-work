@@ -35,8 +35,9 @@ protected:
     tf::TransformListener* tfListener;
     tf::TransformBroadcaster* tfBroadcaster;
     tf::StampedTransform* robotStampedTransform;
-    tf::Transform* robotTransform;
+    // tf::Transform* robotTransform;
     map<string, tf::StampedTransform> robotsPoses;
+    ros::ServiceClient modelsPoseClient;
 
     int team;
     int total;
@@ -67,19 +68,21 @@ public:
         this->total = total;
         pose.position.x=x;
         pose.position.y=y;
-        tfListener = new tf::TransformListener();
+        tfListener = new tf::TransformListener(ros::Duration(170.0));
         tfBroadcaster = new tf::TransformBroadcaster();
         robotStampedTransform = new tf::StampedTransform();
-        robotTransform = new tf::Transform();         
+        tf::Transform robotTransform;
         robotsOrientation = FORWARD;
+
+        modelsPoseClient = GazeboService::getInstance().getGazeboModelPoseClient();
 
         rate = new ros::Rate(fps);
         halfRate = new ros::Rate(fps/2);
         updateSpeed();
         cout<<"published to tf my pose x=" <<pose.position.x<<" y="<<pose.position.y<<endl;
-        robotTransform->setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
-        robotTransform->setRotation(tf::Quaternion(0, 0, 0, 1));
-        tfBroadcaster->sendTransform(tf::StampedTransform(*robotTransform, ros::Time::now(), "/world", "/"+modelName));
+        robotTransform.setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
+        robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
+        tfBroadcaster->sendTransform(tf::StampedTransform(robotTransform, ros::Time::now(), "/world", "/"+modelName));
         gazeboModelStatePublisher = GazeboService::getInstance().getModelStatePublisher();
         // ballPoseSubscriber = GazeboService::getInstance().getBallPoseSubscriver();
         ifstream fin(this->pathToModel);
@@ -97,7 +100,7 @@ public:
         delete tfListener;
         delete tfBroadcaster;
         delete robotStampedTransform;
-        delete robotTransform;
+        // delete robotTransform;
         delete rate;
         delete halfRate;
     }
@@ -184,12 +187,13 @@ public:
         while(true){
             try{
                 cout<<"trying wait"<<endl;
-                tfListener->waitForTransform("/"+modelName, "/ball", ros::Time(0), ros::Duration(1));
-                // tfListener->waitForTransform("/ball", objectName, ros::Time(0), ros::Duration(1));
+                tfListener->waitForTransform("/"+modelName, "/ball", ros::Time::now(), ros::Duration(40));
+                // tfListener->waitForTransform("/ball", modelName, ros::Time(0), ros::Duration(1));
                 cout<<"trying lookup"<<endl;
                 tfListener->lookupTransform("/"+modelName, "/ball", ros::Time(0), ballRobotTransform);
-                // tfListener->lookupTransform("/ball", objectName, ros::Time(0), ballRobotTransform);
-                cout<<"Done!"<<endl;
+                // tfListener->lookupTransform("/ball", modelName, ros::Time(0), ballRobotTransform);
+                cout<<"Done! Ball is at:"<<endl;
+                cout<<ballRobotTransform.getOrigin().getX()<<";"<<ballRobotTransform.getOrigin().getY()<<endl;
                 break;
             }
             catch (tf::TransformException &ex)
@@ -236,16 +240,16 @@ public:
         updateSpeed();
         gazebo_msgs::ModelState modelState;
         modelState.model_name = this->modelName;
-        std::cout<<"robot's pos " << pose.position<<std::endl;
-        std::cout<<"before turn robot's or " << pose.orientation<<std::endl;
-        std::cout<<"required pos:"<<x<<";"<<y<<std::endl;
-        std::cout<<"-----------------------------------"<<std::endl;
+        // std::cout<<"robot's pos " << pose.position<<std::endl;
+        // std::cout<<"before turn robot's or " << pose.orientation<<std::endl;
+        // std::cout<<"required pos:"<<x<<";"<<y<<std::endl;
+        // std::cout<<"-----------------------------------"<<std::endl;
         double dx, dy;
         int signX, signY;   
         bool turned = false;  
-        std::cout<<"robots orientation: "<<robotsOrientation<<std::endl;   
+        // std::cout<<"robots orientation: "<<robotsOrientation<<std::endl;   
         if(x > pose.position.x) {
-            std::cout<<"my x "<< pose.position.x<<" required x "<<x<<std::endl;
+            // std::cout<<"my x "<< pose.position.x<<" required x "<<x<<std::endl;
             dx = (x - pose.position.x);
             signX = 1;
             turned = _turn(FORWARD);
@@ -269,14 +273,16 @@ public:
         // std::cout<<"robot's dx = " << dx <<std::endl;
         dy /= fps;
         // std::cout<<"robot's dy = " << dy <<std::endl;
-        std::cout<<"-----------------------------------"<<std::endl;
-        std::cout<<"after turn before move robot's or " << pose.orientation<<std::endl;
+        // std::cout<<"-----------------------------------"<<std::endl;
+        // std::cout<<"after turn before move robot's or " << pose.orientation<<std::endl;
         
         for (int i = 0; i < fps+1; i++){
-            robotTransform->setOrigin(tf::Vector3(x, y, 0.0));
-            robotTransform->setRotation(tf::Quaternion(0, 0, 0, 1));
+            tf::Transform robotTransform;
+            robotTransform.setOrigin(tf::Vector3(x, y, 0.0));
+            robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
+            cout<<"trying to send Transform"<<endl;
             tfBroadcaster->sendTransform(tf::StampedTransform(
-                *robotStampedTransform, ros::Time::now(), "/world", "/"+modelName));
+                robotTransform, ros::Time::now(), "/world", "/"+modelName));
             pose.position.x += signX * dx;
             pose.position.y += signY * dy;
             // std::cout<<"Moving to "<<pose.position<<std::endl;
@@ -285,9 +291,10 @@ public:
             if(turned) rate->sleep();
             else halfRate->sleep();
         }
-        robotTransform->setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
-        robotTransform->setRotation(tf::Quaternion(0, 0, 0, 1));
-        tfBroadcaster->sendTransform(tf::StampedTransform(*robotTransform, ros::Time::now(), "/world", "/"+modelName));
+        tf::Transform robotTransform;
+        robotTransform.setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
+        robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
+        tfBroadcaster->sendTransform(tf::StampedTransform(robotTransform, ros::Time::now(), "/world", "/"+modelName));
     }
 
 protected:
@@ -384,10 +391,10 @@ protected:
         tf::Quaternion tfq;
         geometry_msgs::Quaternion q;
         
-        std::cout<<angle<<"and my angle is "<<this->angle<<std::endl;
+        // std::cout<<angle<<"and my angle is "<<this->angle<<std::endl;
 
         double dangle = angle / fps;
-        std::cout<<"dangle "<<dangle<<std::endl;
+        // std::cout<<"dangle "<<dangle<<std::endl;
 
         for (int i = 0; i < fps; i++)
         {
@@ -395,15 +402,15 @@ protected:
                 this->angle -= dangle;
             else
                 this->angle += dangle;
-            std::cout<<"now angle is "<<this->angle<<std::endl;
+            // std::cout<<"now angle is "<<this->angle<<std::endl;
             tfq.setRPY(0, 0, this->angle);
             tf::quaternionTFToMsg(tfq, q);
-            std::cout<<"computed or"<<q<<std::endl;
+            // std::cout<<"computed or"<<q<<std::endl;
             pose.orientation = q;
             modelState.pose =pose;
             gazeboModelStatePublisher.publish(modelState);
             rate->sleep();
         }
-        std::cout<<"final or"<<q<<std::endl;
+        // std::cout<<"final or"<<q<<std::endl;
 }
 };

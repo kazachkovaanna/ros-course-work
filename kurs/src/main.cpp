@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "gaztest");
     ROS_INFO("0");
     GazeboService::getInstance();
+    ros::Rate rate(0.5);
 
     ROS_INFO("1");
 
@@ -28,10 +29,16 @@ int main(int argc, char** argv) {
 
     random_device rd;
     uniform_real_distribution<double> interval(-10.0, 10.0);
+    int i  = 0;
 
     while(ros::ok()){
-        robot->moveTo(interval(rd), interval(rd));
-        enemyRobot->moveTo(interval(rd), interval(rd));
+        // robot->moveTo(interval(rd), interval(rd));
+        // enemyRobot->moveTo(interval(rd), interval(rd));
+        cout<<"["<<i<<"] robot.play"<<endl;
+        robot->play();
+        cout<<"["<<i<<"] enemy.play"<<endl;
+        enemyRobot->play();
+        rate.sleep();
     }
     ros::spinOnce();
     
