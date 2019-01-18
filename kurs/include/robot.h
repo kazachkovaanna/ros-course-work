@@ -9,8 +9,6 @@
 #include "transforms.h"
 #include "tf/LinearMath/Quaternion.h"
 #include "tf/transform_datatypes.h"
-#include "tf/transform_listener.h"
-#include "tf/transform_broadcaster.h"
 #include <cmath>
 #include <map>
 #include <random>
@@ -22,7 +20,6 @@ enum orientation { FORWARD, BACK, RIGHT, LEFT };
 class Robot{
 protected:
     ros::Publisher gazeboModelStatePublisher;
-    // ros::Subscriber ballPoseSubscriber;
     string pathToModel;
     string modelDescription;
     string modelName;
@@ -32,15 +29,12 @@ protected:
     double angle;
     ros::Rate* rate;
     ros::Rate* halfRate;
-    tf::TransformListener* tfListener;
-    tf::TransformBroadcaster* tfBroadcaster;
-    tf::StampedTransform* robotStampedTransform;
-    // tf::Transform* robotTransform;
-    map<string, tf::StampedTransform> robotsPoses;
     ros::ServiceClient modelsPoseClient;
 
     int team;
     int total;
+    int number;
+    string type;
 
     void spawnModel(){
         gazebo_msgs::SpawnModel srv;
@@ -53,7 +47,7 @@ protected:
 
     void updateSpeed(){
         random_device rd;
-        uniform_real_distribution<double> interval(10, 20);
+        uniform_real_distribution<double> interval(20, 60);
         fps = interval(rd);
         delete rate;
         delete halfRate;
@@ -66,12 +60,10 @@ public:
         this->modelName = type+to_string(team)+to_string(number);
         this->pathToModel = "/home/user/Projects/ros/catkin_ws/src/ros-course-work/kurs/models/player"+to_string(team)+"/model.sdf";
         this->total = total;
+        this->type = type;
+        this->number = number;
         pose.position.x=x;
         pose.position.y=y;
-        tfListener = new tf::TransformListener(ros::Duration(170.0));
-        tfBroadcaster = new tf::TransformBroadcaster();
-        robotStampedTransform = new tf::StampedTransform();
-        tf::Transform robotTransform;
         robotsOrientation = FORWARD;
 
         modelsPoseClient = GazeboService::getInstance().getGazeboModelPoseClient();
@@ -79,12 +71,7 @@ public:
         rate = new ros::Rate(fps);
         halfRate = new ros::Rate(fps/2);
         updateSpeed();
-        cout<<"published to tf my pose x=" <<pose.position.x<<" y="<<pose.position.y<<endl;
-        robotTransform.setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
-        robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
-        tfBroadcaster->sendTransform(tf::StampedTransform(robotTransform, ros::Time::now(), "/world", "/"+modelName));
         gazeboModelStatePublisher = GazeboService::getInstance().getModelStatePublisher();
-        // ballPoseSubscriber = GazeboService::getInstance().getBallPoseSubscriver();
         ifstream fin(this->pathToModel);
         string lineBuffer;
         while(getline(fin, lineBuffer)) {
@@ -97,10 +84,6 @@ public:
 
 
     ~Robot(){
-        delete tfListener;
-        delete tfBroadcaster;
-        delete robotStampedTransform;
-        // delete robotTransform;
         delete rate;
         delete halfRate;
     }
@@ -111,101 +94,39 @@ public:
     */
     Transforms getTransofrms(const string& objectName){
         Transforms transforms;
-
-        // for(int i  = 1; i<= total/2; i++){
-        //     tf::StampedTransform transform;
-        //     while(true){
-        //     try{
-        //         cout<<"trying wait for player1"<<i<<endl;
-        //         tfListener->waitForTransform("player1"+to_string(i), modelName,ros::Time(0), ros::Duration(1));
-        //         cout<<"trying lookup"<<endl;
-        //         tfListener->lookupTransform("player1"+to_string(i), modelName,ros::Time(0), transform);
-        //         cout<<"Done!"<<endl;
-        //         break;
-        //     }
-        //     catch (tf::TransformException &ex)
-        //         {
-        //             ROS_ERROR("%s",ex.what());
-        //             cout<<"Not ready yet..."<<endl;
-        //             rate->sleep();
-        //             sleep(1);
-        //             continue;
-        //         }
-        //     }
-        //     transforms.addToTeam1(transform);
-        // }
-        // for(int i  = 1; i<= total/2; i++){
-        //     tf::StampedTransform transform;
-        //     while(true){
-        //     try{
-        //         cout<<"trying wait for player2"<<i<<endl;
-        //         tfListener->waitForTransform("player2"+to_string(i), modelName,ros::Time(0), ros::Duration(1));
-        //         cout<<"trying lookup"<<endl;
-        //         tfListener->lookupTransform("player2"+to_string(i), modelName,ros::Time(0), transform);
-        //         cout<<"Done!"<<endl;
-        //         break;
-        //     }
-        //     catch (tf::TransformException &ex)
-        //         {
-        //             ROS_ERROR("%s",ex.what());
-        //             cout<<"Not ready yet..."<<endl;
-        //             rate->sleep();
-        //             sleep(1);
-        //             continue;
-        //         }
-        //     }
-        //     transforms.addToTeam2(transform);
-        // }
-        // for(int i  = 1; i<= 2; i++){
-        //     tf::StampedTransform transform;
-        //     while(true){
-        //     try{
-        //         cout<<"trying wait for player1"<<i<<endl;
-        //         tfListener->waitForTransform("goalkeeper"+to_string(i),modelName, ros::Time(0), ros::Duration(1));
-        //         cout<<"trying lookup"<<endl;
-        //         tfListener->lookupTransform("goalkeeper"+to_string(i),modelName, ros::Time(0), transform);
-        //         cout<<"Done!"<<endl;
-        //         break;
-        //     }
-        //     catch (tf::TransformException &ex)
-        //         {
-        //             ROS_ERROR("%s",ex.what());
-        //             cout<<"Not ready yet..."<<endl;
-        //             rate->sleep();
-        //             sleep(1);
-        //             continue;
-        //         }
-        //     }
-        //     transforms.addToGoalkeepers(transform);
-        // }
-
-        // robotsPoses.
-        tf::StampedTransform ballRobotTransform;
         cout<<"In get transform, model name is "<<modelName<<endl;
 
-        // cout<<"ballTr "<<endl;
-        while(true){
-            try{
-                cout<<"trying wait"<<endl;
-                tfListener->waitForTransform("/"+modelName, "/ball", ros::Time::now(), ros::Duration(40));
-                // tfListener->waitForTransform("/ball", modelName, ros::Time(0), ros::Duration(1));
-                cout<<"trying lookup"<<endl;
-                tfListener->lookupTransform("/"+modelName, "/ball", ros::Time(0), ballRobotTransform);
-                // tfListener->lookupTransform("/ball", modelName, ros::Time(0), ballRobotTransform);
-                cout<<"Done! Ball is at:"<<endl;
-                cout<<ballRobotTransform.getOrigin().getX()<<";"<<ballRobotTransform.getOrigin().getY()<<endl;
-                break;
-            }
-            catch (tf::TransformException &ex)
-                {
-                    ROS_ERROR("%s",ex.what());
-                    cout<<"Not ready yet..."<<endl;
-                    rate->sleep();
-                    sleep(1);
-                    continue;
-                }
+        gazebo_msgs::GetModelState modelState;
+        
+        //получить позицию мяча
+        modelState.request.model_name = "ball";
+        if(modelsPoseClient.call(modelState)){
+            transforms.addBall(modelState.response.pose);
         }
-        transforms.addBall(ballRobotTransform);
+        //своей команды
+        for (int i = 0; i < total/2; i++){
+            modelState.request.model_name = "player1"+to_string(i);
+            if(modelsPoseClient.call(modelState)){
+                transforms.addToTeam1(modelState.response.pose);
+            }
+        }
+        //противника
+        for (int i = 0; i < total/2; i++){
+            modelState.request.model_name = "player2"+to_string(i);
+            if(modelsPoseClient.call(modelState)){
+                transforms.addToTeam2(modelState.response.pose);
+            }
+        }
+        //своего вратаря
+        modelState.request.model_name = "goalkeeper11";
+        if(modelsPoseClient.call(modelState)){
+            transforms.addToGoalkeepers(modelState.response.pose);
+        }
+        //чужого вратаря
+        modelState.request.model_name = "goalkeeper21";
+        if(modelsPoseClient.call(modelState)){
+            transforms.addToGoalkeepers(modelState.response.pose);
+        }
         return transforms;
     }
 
@@ -223,11 +144,10 @@ public:
         uniform_real_distribution<double> intervalx(-10.0, 10.0);
         uniform_real_distribution<double> intervaly(-9.0, 9.0);
         if(interval(rd)>1.0){
-            double bx = transforms.getBall().getOrigin().getX();
-            double by = transforms.getBall().getOrigin().getY();
+            double bx = transforms.getBall().position.x;
+            double by = transforms.getBall().position.y;
             cout<<"Ball's position is "<<bx<<" "<<by<<endl;
             
-
             moveTo(bx, by);
         }
         else {
@@ -237,12 +157,31 @@ public:
     }
 
     void moveTo(double x, double y){
+        random_device rd;
+        uniform_real_distribution<double> intervalx(-10.0, 10.0);
+        uniform_real_distribution<double> intervaly(-9.0, 9.0);
+
+        cout<<this->number<<endl;
+        if(this->type=="player"){
+        if(this->number==1){
+            if(x > -3) x = -3;            
+        } else if(this->number ==2){
+            if(x > 2) x = 2;
+            if(x < -3) x = -2.8;
+        }
+        else{
+            if(x<2) x = 2.2;
+        }}
+        if(this->type=="player" &&  abs(abs(pose.position.x) - abs(x)) <0.5 && abs(abs(pose.position.y) - abs(y)) <0.5 ){
+            moveTo(intervalx(rd), intervaly(rd));
+            return;
+        }
         updateSpeed();
         gazebo_msgs::ModelState modelState;
         modelState.model_name = this->modelName;
         // std::cout<<"robot's pos " << pose.position<<std::endl;
         // std::cout<<"before turn robot's or " << pose.orientation<<std::endl;
-        // std::cout<<"required pos:"<<x<<";"<<y<<std::endl;
+        std::cout<<"required pos:"<<x<<";"<<y<<std::endl;
         // std::cout<<"-----------------------------------"<<std::endl;
         double dx, dy;
         int signX, signY;   
@@ -277,12 +216,6 @@ public:
         // std::cout<<"after turn before move robot's or " << pose.orientation<<std::endl;
         
         for (int i = 0; i < fps+1; i++){
-            tf::Transform robotTransform;
-            robotTransform.setOrigin(tf::Vector3(x, y, 0.0));
-            robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
-            cout<<"trying to send Transform"<<endl;
-            tfBroadcaster->sendTransform(tf::StampedTransform(
-                robotTransform, ros::Time::now(), "/world", "/"+modelName));
             pose.position.x += signX * dx;
             pose.position.y += signY * dy;
             // std::cout<<"Moving to "<<pose.position<<std::endl;
@@ -291,10 +224,6 @@ public:
             if(turned) rate->sleep();
             else halfRate->sleep();
         }
-        tf::Transform robotTransform;
-        robotTransform.setOrigin(tf::Vector3(pose.position.x, pose.position.y, 0.0));
-        robotTransform.setRotation(tf::Quaternion(0, 0, 0, 1));
-        tfBroadcaster->sendTransform(tf::StampedTransform(robotTransform, ros::Time::now(), "/world", "/"+modelName));
     }
 
 protected:
