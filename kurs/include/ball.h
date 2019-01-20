@@ -121,13 +121,13 @@ public:
             if(ballPose.position.x > 10 || ballPose.position.x < -10 ||
                 ballPose.position.y > 10 || ballPose.position.y < -10
             ){
-                // gazebo_msgs::ModelState modelState;
-                // modelState.model_name = this->modelName;
-                // ballPose.position.x = 0;
-                // ballPose.position.y = 0;
-                // modelState.pose = ballPose;
-                // gazeboModelStatePublisher.publish(modelState);
-                // spawnModel();
+                gazebo_msgs::ModelState modelState;
+                modelState.model_name = this->modelName;
+                ballPose.position.x = 0.5;
+                ballPose.position.y = 0.5;
+                modelState.pose = ballPose;
+                gazeboModelStatePublisher.publish(modelState);
+                spawnModel();
             }
             cout<<ballPose.position.x<<","<<ballPose.position.y<<endl;
             transform.setOrigin(tf::Vector3(ballPose.position.x, ballPose.position.y, 0.0));

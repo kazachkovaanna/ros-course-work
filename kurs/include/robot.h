@@ -35,6 +35,7 @@ protected:
     int total;
     int number;
     string type;
+    double goalx, goaly;
 
     void spawnModel(){
         gazebo_msgs::SpawnModel srv;
@@ -65,6 +66,13 @@ public:
         pose.position.x=x;
         pose.position.y=y;
         robotsOrientation = FORWARD;
+        if(team==1){
+            goalx = 0;
+            goaly = 10;
+        } else{
+            goalx = 0;
+            goaly = -10;
+        }
 
         modelsPoseClient = GazeboService::getInstance().getGazeboModelPoseClient();
 
@@ -147,8 +155,30 @@ public:
             double bx = transforms.getBall().position.x;
             double by = transforms.getBall().position.y;
             cout<<"Ball's position is "<<bx<<" "<<by<<endl;
+            //едем пинать мяч
+            //считаем уравнение прямой между мячом и воротами
             
-            moveTo(bx, by);
+            double a, b;
+            if(bx == 0) a = 1;
+            else a = (by - goaly)/(bx - goalx);
+            b = goaly - a*goalx;
+            double dx, dy;
+
+            if(team == 1) dx = bx + 0.1;
+            else dx = bx - 0.1;            
+            dy = a*dx + b;
+
+            cout<<"bx "<<bx <<" by "<<by<<endl;
+            cout<<"goalx "<<goalx<<" goaly "<<goaly<<endl;
+            cout<<"a "<<a<<" b "<<b<<endl;
+            cout<<"dx "<<dx <<" dy "<<dy<<endl;
+
+            moveTo(dx, dy);
+
+            if(team == 1) dx = bx - 0.1;
+            else dx = bx + 0.1;
+            dy = a*dx + b;
+            moveTo(dx, dy);
         }
         else {
             cout<<"moving to random place!"<<endl;
@@ -173,7 +203,7 @@ public:
             if(x<2) x = 2.2;
         }}
         if(this->type=="player" &&  abs(abs(pose.position.x) - abs(x)) <0.5 && abs(abs(pose.position.y) - abs(y)) <0.5 ){
-            moveTo(intervalx(rd), intervaly(rd));
+            // moveTo(intervalx(rd), intervaly(rd));
             return;
         }
         updateSpeed();

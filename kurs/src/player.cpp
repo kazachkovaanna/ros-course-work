@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     ros::service::waitForService("gazebo/spawn_sdf_model"); 
 
     // initializing with parameters
-    ros::Rate rate(0.5);
+    ros::Rate rate(0.25);
     string name;
     int team, number, total;
     double x,y;

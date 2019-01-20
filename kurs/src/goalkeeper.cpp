@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "keeper");
     GazeboService::getInstance();
     ros::service::waitForService("gazebo/spawn_sdf_model"); 
-    ros::Rate rate(0.5);
+    ros::Rate rate(0.25);
 
     string name;
     int team, number, total;
@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
     Robot* player;
     player = new Robot(x, y, team, number, total, "goalkeeper"); 
   
+    rate.sleep();
     random_device rd;
     uniform_real_distribution<double> interval(-2.0, 2.0);
 
