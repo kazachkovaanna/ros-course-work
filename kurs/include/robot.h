@@ -68,10 +68,10 @@ public:
         robotsOrientation = FORWARD;
         if(team==1){
             goalx = 0;
-            goaly = 10;
+            goaly = -10;
         } else{
             goalx = 0;
-            goaly = -10;
+            goaly = 10;
         }
 
         modelsPoseClient = GazeboService::getInstance().getGazeboModelPoseClient();
@@ -112,14 +112,14 @@ public:
             transforms.addBall(modelState.response.pose);
         }
         //своей команды
-        for (int i = 0; i < total/2; i++){
+        for (int i = 1; i <= total/2; i++){
             modelState.request.model_name = "player1"+to_string(i);
             if(modelsPoseClient.call(modelState)){
                 transforms.addToTeam1(modelState.response.pose);
             }
         }
         //противника
-        for (int i = 0; i < total/2; i++){
+        for (int i = 1; i <= total/2; i++){
             modelState.request.model_name = "player2"+to_string(i);
             if(modelsPoseClient.call(modelState)){
                 transforms.addToTeam2(modelState.response.pose);
@@ -155,6 +155,7 @@ public:
             double bx = transforms.getBall().position.x;
             double by = transforms.getBall().position.y;
             cout<<"Ball's position is "<<bx<<" "<<by<<endl;
+            if(isnan(bx) || isnan(by)) return;
             //едем пинать мяч
             //считаем уравнение прямой между мячом и воротами
             
@@ -221,22 +222,22 @@ public:
             // std::cout<<"my x "<< pose.position.x<<" required x "<<x<<std::endl;
             dx = (x - pose.position.x);
             signX = 1;
-            turned = _turn(FORWARD);
+            // turned = _turn(FORWARD);
         }
         else {
             dx = (pose.position.x - x);
             signX = -1;
-            turned = _turn(BACK);
+            // turned = _turn(BACK);
         }
         if(y > pose.position.y) {
             dy = (y - pose.position.y);
             signY = 1;
-            turned = _turn(LEFT);
+            // turned = _turn(LEFT);
         }
         else {
             dy = (pose.position.y - y);
             signY = -1;
-            turned = _turn(RIGHT);
+            // turned = _turn(RIGHT);
         }
         dx /= fps;
         // std::cout<<"robot's dx = " << dx <<std::endl;
@@ -245,6 +246,7 @@ public:
         // std::cout<<"-----------------------------------"<<std::endl;
         // std::cout<<"after turn before move robot's or " << pose.orientation<<std::endl;
         
+        turnRobot(x, y);
         for (int i = 0; i < fps+1; i++){
             pose.position.x += signX * dx;
             pose.position.y += signY * dy;
@@ -343,6 +345,21 @@ protected:
         _turn(2 * M_PI, false);
     }
 
+    void turnRobot(double moveToX, double moveToY) {
+        double width = moveToX - pose.position.x;
+        double height = moveToY - pose.position.y;
+        double lenght = sqrt(pow(width, 2) + pow(height, 2));
+        double angle;
+
+        static double lastAngle = 0;
+
+        if(abs(width) < 1e-5) angle = asin(height/lenght);
+        else angle = acos(width/lenght);
+        angle -= lastAngle;
+        lastAngle = angle;
+        _turn(angle, true);
+    }
+
     void _turn(double angle, bool clockwise)
     {
         gazebo_msgs::ModelState modelState;
@@ -350,7 +367,8 @@ protected:
         tf::Quaternion tfq;
         geometry_msgs::Quaternion q;
         
-        // std::cout<<angle<<"and my angle is "<<this->angle<<std::endl;
+        std::cout<<angle<<"and my angle is "<<this->angle<<std::endl;
+        ros::Rate turnRate(60);
 
         double dangle = angle / fps;
         // std::cout<<"dangle "<<dangle<<std::endl;
@@ -369,6 +387,7 @@ protected:
             modelState.pose =pose;
             gazeboModelStatePublisher.publish(modelState);
             rate->sleep();
+            // turnRate.sleep();
         }
         // std::cout<<"final or"<<q<<std::endl;
 }

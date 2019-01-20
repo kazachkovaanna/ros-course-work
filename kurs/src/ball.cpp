@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
     transform.setRotation(tf::Quaternion(0, 0, 0, 1));
     tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
 
-    for(int i = 0; i<110; i++){
-        tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
-        rate.sleep();
-    }
+    // for(int i = 0; i<110; i++){
+    //     tf_broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "/ball"));
+    //     rate.sleep();
+    // }
     // ros::param::get("~name", name);
     // ros::param::get("~team",team);
 	// ros::param::get("~x", x);

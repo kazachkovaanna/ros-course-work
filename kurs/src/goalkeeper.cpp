@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "keeper");
     GazeboService::getInstance();
     ros::service::waitForService("gazebo/spawn_sdf_model"); 
-    ros::Rate rate(0.25);
+    ros::Rate rate(1);
 
     string name;
     int team, number, total;
@@ -34,10 +34,16 @@ int main(int argc, char** argv) {
     uniform_real_distribution<double> interval(-2.0, 2.0);
 
     while(ros::ok()){
+        double bx = player->getTransofrms("ball").getBall().position.x;
+        if(isnan(bx)){
+            rate.sleep();
+            continue;
+        }
+
         if(team==1)
-        player->moveTo(player->getTransofrms("ball").getBall().position.x, 10.0);
+        player->moveTo(bx, 10.0);
         else 
-        player->moveTo(player->getTransofrms("ball").getBall().position.x, -10.0);
+        player->moveTo(bx, -10.0);
     }
     ros::spinOnce();
     return 0;
